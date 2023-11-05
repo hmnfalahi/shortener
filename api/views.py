@@ -1,4 +1,3 @@
-import requests
 from django.db import transaction
 from django.http import HttpResponseRedirect
 from rest_framework import status
@@ -27,27 +26,15 @@ class LinkController(RetrieveUpdateDestroyAPIView, CreateAPIView):
         return super().dispatch(request, *args, **kwargs)
     
     def post(self, request, *args, **kwargs):
-        link = Link.objects.filter(url=self.request.data['url']).first()
-
-        if link is not None:
-            self._ensure_link_member(link_id=link.id)
-
-            serializer = self.get_serializer(instance=link)
-            headers = self.get_success_headers(serializer.data)
-            return Response(data=serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
-        response = super().post(request, *args, **kwargs)
-        self._ensure_link_member(link_id=response.data['id'])
-        return response
-
-    def perform_create(self, serializer):
-        response = requests.get('http://127.0.0.1:8000/api/keys/')
-        if response.status_code != 200:
-            raise Exception(response.content)
-
-        short_url = response.json()['base62']
-        url = self.request.data['url'].lstrip('https://')
-        serializer.save(url=f'https://{url}', short_url=short_url)
+        link, created = Link.objects.get_or_create(url=self.request.data['url'])
+        self._ensure_link_member(link_id=link.id)
+        serializer = self.serializer_class(instance=link)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers,
+        )
 
     def get(self, request, *args, **kwargs):
         short_url = kwargs.get('short_url')

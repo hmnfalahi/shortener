@@ -1,6 +1,20 @@
+import requests
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
+
+
+class LinkManager(models.Manager):
+
+    def create(self, url):
+        response = requests.get('http://127.0.0.1:8000/api/keys/')
+        if response.status_code != 200:
+            raise Exception(response.content)
+
+        short_url = response.json()['base62']
+        link = Link(short_url=short_url, url=url, view_count=0)
+        link.save()
+        return link
 
 
 class Link(models.Model):
@@ -8,6 +22,8 @@ class Link(models.Model):
     url = models.TextField()
     short_url = models.TextField(blank=True)
     view_count = models.IntegerField(default=0)
+
+    objects = LinkManager()
 
     class Meta:
         db_table = 'link'
