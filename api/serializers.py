@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import AuthUser, TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import Token
 
 from api.models import Link
 
@@ -16,3 +18,14 @@ class LinkSerializer(serializers.ModelSerializer):
         }
 
         # read_only_fields = ['short_url', 'view_count']
+
+
+class DRFTokenSerializer(TokenObtainPairSerializer):
+
+    @classmethod
+    def get_token(cls, user: AuthUser) -> Token:
+        token = super().get_token(user)
+        token['email'] = user.email
+        return token
+
+
