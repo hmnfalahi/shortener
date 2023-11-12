@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'api',
+    'cli',
 ]
 
 MIDDLEWARE = [
@@ -107,7 +108,18 @@ DATABASES = {
         'PORT': '',
         'MIGRATE': False
     },
+    'administrative': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'localhost',
+        'PORT': '',
+        'MIGRATE': False
+    },
 }
+DATABASE_PORT = '' if DATABASES['default']['PORT'] == '' else f":{DATABASES['default']['PORT']}"
+DATABASE_ADMIN_URL = f"postgresql://{DATABASES['default']['USER']}:{DATABASES['default']['PASSWORD']}@{DATABASES['default']['HOST']}{DATABASE_PORT}/postgres"
 
 
 # Password validation
